@@ -8,6 +8,10 @@ A public verifier Agent is activated by an irreversible burn of `$CELLUMO`. The 
 
 The token mint is $ca. The burn amount, burn destination and activation program are TBA. The production registration endpoint must remain burn-gated until those values are published and burn proofs can be verified on Solana.
 
+## On-chain token controls
+
+$CELLUMO uses SPL Token-2022 with no transfer-fee extension, so the token transfer tax is 0%. Mint authority and freeze authority are both revoked. Pump.fun and venue trading fees are external platform fees, not a Cellumo token tax.
+
 ## Operating revenue
 
 Pump.fun creator rewards are the protocol's operating inflow:
