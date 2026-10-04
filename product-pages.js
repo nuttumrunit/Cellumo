@@ -83,8 +83,13 @@
 
   async function refresh() {
     try { const [state,telemetry,stream]=await Promise.all([get('/api/state'),get('/api/telemetry'),get('/api/github-stream')]); renderLineage(stream.channels||[],state); renderTreasury(state,telemetry,stream.channels||[]); renderLiveTelemetry(state,telemetry,stream.channels||[]); renderStatus(telemetry); }
-    catch(error) { for(const bar of document.querySelectorAll('.view-statusbar em'))bar.textContent=`core unavailable · ${error.message}`; }
+    catch(error) {
+      try {
+        const stream=await get('./assets/github-stream.json'),channels=stream.channels||[],snapshotState={lineage:[],mutations:[],events:[],treasury:{initialized:false,address:null},machines:channels.map((channel,index)=>({id:`observer-${index+1}`,name:channel.agent,status:'online',activity:`observing ${channel.file}`,lastSeenAt:new Date().toISOString(),target:channel.repo,resources:{cpu:0,memoryGb:0}}))},files=channels.reduce((sum,channel)=>sum+(channel.files?.length||1),0),telemetry={uptimeSec:0,requests:files,rssMb:0,sseClients:0,at:new Date().toISOString()};
+        renderLineage(channels,snapshotState);renderLiveTelemetry(snapshotState,telemetry,channels);for(const bar of document.querySelectorAll('.view-statusbar em'))bar.innerHTML=`<i></i> GitHub snapshot · ${channels.length} repositories · ${files} files <time data-et-clock>${etTime()} ET</time>`;
+      } catch(fallbackError) { for(const bar of document.querySelectorAll('.view-statusbar em'))bar.textContent=`data unavailable · ${fallbackError.message}`; }
+    }
   }
 
-  shell(); bindSpawn(); bindKeyboard(); refresh(); tickEtClocks(); setInterval(refresh,15000); setInterval(tickEtClocks,1000);
+  shell(); bindSpawn(); bindKeyboard(); refresh(); tickEtClocks(); setInterval(refresh,location.hostname.endsWith('github.io')?90000:15000); setInterval(tickEtClocks,1000);
 })();
