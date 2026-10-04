@@ -92,7 +92,7 @@ npm run check
 npm test
 ```
 
-The $CELLUMO mint and Pump.fun market are live. The treasury, burn amount and public activation program remain uninitialized until their real values are supplied.
+The $CELLUMO mint and Pump.fun market are live. The token has 0% transfer tax, with mint and freeze authorities revoked. The treasury, burn amount and public activation program remain uninitialized until their real values are supplied.
 
 ## Token loop
 
