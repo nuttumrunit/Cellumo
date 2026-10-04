@@ -93,3 +93,7 @@ npm test
 ```
 
 Token contract, treasury, X account and Pump.fun URL remain explicitly uninitialized until real values are supplied.
+
+## Token loop
+
+Public Agent activation burns $CELLUMO. Pump.fun creator rewards route 80% to the compute reserve and 20% to the verified-Agent epoch pool. Until the CA, burn amount and treasury are published, these controls remain visibly TBA. See [TOKENOMICS.md](./TOKENOMICS.md).
