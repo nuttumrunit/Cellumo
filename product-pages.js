@@ -47,7 +47,8 @@
     const host = $('[data-preflight]');
     if (host) {
       const online = state.machines.filter(machine => machine.status !== 'offline').length;
-      const checks = [['CORE','READY',`${Math.floor(telemetry.uptimeSec/60)}m uptime`],['AGENTS',online?'READY':'WAIT',`${online}/${state.machines.length} online`],['SOURCES',channels.length?'READY':'WAIT',`${channels.filter(item=>!item.error).length}/${channels.length} readable`],['QUORUM',online>=3?'READY':'WAIT','2 independent replays'],['SOLANA VAULT',state.treasury.initialized?'READY':'PENDING',state.treasury.address||'not initialized'],['TOKEN / CA','PENDING','TBA · no address published']];
+      const snapshot=telemetry.snapshot===true;
+      const checks = [['CORE',snapshot?'LOCAL ONLY':'READY',snapshot?'run npm start to activate':`${Math.floor(telemetry.uptimeSec/60)}m uptime`],['AGENTS',snapshot?'OBSERVED':online?'READY':'WAIT',snapshot?`${channels.length} public observers`:`${online}/${state.machines.length} online`],['SOURCES',channels.length?'READY':'WAIT',`${channels.filter(item=>!item.error).length}/${channels.length} readable`],['QUORUM',!snapshot&&online>=3?'READY':'WAIT','2 independent replays required'],['SOLANA VAULT',state.treasury.initialized?'READY':'PENDING',state.treasury.address||'not initialized'],['TOKEN / CA','PENDING','TBA · no address published']];
       host.innerHTML = checks.map(([name,status,detail]) => `<article class="${status==='READY'?'ready':'pending'}"><span>${esc(name)}</span><b>${status}</b><small>${esc(detail)}</small></article>`).join('');
     }
     const events = $('[data-runtime-events]');
@@ -73,9 +74,9 @@
   function tickEtClocks(){for(const clock of document.querySelectorAll('[data-et-clock]'))clock.textContent=`${etTime()} ET`;}
 
   function bindSpawn() {
-    const name=$('#machineName'), target=$('#machineTarget'), command=$('[data-spawn-command]');
-    const update=()=>{ const safe=(name?.value||'worker-01').toLowerCase().replace(/[^a-z0-9-]/g,'-').slice(0,24); if(command)command.textContent=`CELLUMO_MACHINE=${safe} node worker.mjs start --auto`; const preview=$('#previewName'); if(preview)preview.textContent=safe||'worker-01'; const klass=$('#previewClass'); if(klass)klass.textContent=(target?.value||'').toUpperCase(); };
-    name?.addEventListener('input',update); target?.addEventListener('change',update);
+    const name=$('#machineName'), target=$('#machineTarget'), cpu=$('#cpuRange'), memory=$('#memRange'), command=$('[data-spawn-command]'), form=$('#spawnForm');
+    const update=()=>{ const safe=(name?.value||'worker-01').toLowerCase().replace(/[^a-z0-9-]/g,'-').slice(0,24),repository=[...form.querySelectorAll('input')].find(input=>input.value.startsWith('https://github.com/'))?.value||'https://github.com/nuttumrunit/Cellumo'; if(command)command.textContent=`git clone https://github.com/nuttumrunit/Cellumo.git\ncd Cellumo\nnpm install\nnpm run check\nnpm start\n\n# in a second terminal\nnode worker.mjs doctor --server http://127.0.0.1:4210\nnode worker.mjs register --name ${safe||'worker-01'} --target "${target?.value||'general'}" --repository "${repository}" --cpu ${cpu?.value||2} --memory ${memory?.value||4} --server http://127.0.0.1:4210\nnode worker.mjs start --auto --server http://127.0.0.1:4210`; const preview=$('#previewName'); if(preview)preview.textContent=safe||'worker-01'; const klass=$('#previewClass'); if(klass)klass.textContent=(target?.value||'').toUpperCase(); };
+    name?.addEventListener('input',update); target?.addEventListener('change',update);cpu?.addEventListener('input',update);memory?.addEventListener('input',update);form?.querySelectorAll('input').forEach(input=>input.addEventListener('input',update));
     $('[data-copy-command]')?.addEventListener('click',async event=>{ try{await navigator.clipboard.writeText(command.textContent);event.currentTarget.textContent='copied'}catch{event.currentTarget.textContent='select command'} setTimeout(()=>{event.currentTarget.textContent='copy command'},1300); }); update();
   }
 
@@ -85,8 +86,8 @@
     try { const [state,telemetry,stream]=await Promise.all([get('/api/state'),get('/api/telemetry'),get('/api/github-stream')]); renderLineage(stream.channels||[],state); renderTreasury(state,telemetry,stream.channels||[]); renderLiveTelemetry(state,telemetry,stream.channels||[]); renderStatus(telemetry); }
     catch(error) {
       try {
-        const stream=await get('./assets/github-stream.json'),channels=stream.channels||[],snapshotState={lineage:[],mutations:[],events:[],treasury:{initialized:false,address:null},machines:channels.map((channel,index)=>({id:`observer-${index+1}`,name:channel.agent,status:'online',activity:`observing ${channel.file}`,lastSeenAt:new Date().toISOString(),target:channel.repo,resources:{cpu:0,memoryGb:0}}))},files=channels.reduce((sum,channel)=>sum+(channel.files?.length||1),0),telemetry={uptimeSec:0,requests:files,rssMb:0,sseClients:0,at:new Date().toISOString()};
-        renderLineage(channels,snapshotState);renderLiveTelemetry(snapshotState,telemetry,channels);for(const bar of document.querySelectorAll('.view-statusbar em'))bar.innerHTML=`<i></i> GitHub snapshot · ${channels.length} repositories · ${files} files <time data-et-clock>${etTime()} ET</time>`;
+        const stream=await get('./assets/github-stream.json'),channels=stream.channels||[],snapshotState={lineage:[],mutations:[],events:[],treasury:{initialized:false,address:null},machines:channels.map((channel,index)=>({id:`observer-${index+1}`,name:channel.agent,status:'online',activity:`observing ${channel.file}`,lastSeenAt:new Date().toISOString(),target:channel.repo,resources:{cpu:0,memoryGb:0}}))},files=channels.reduce((sum,channel)=>sum+(channel.files?.length||1),0),telemetry={snapshot:true,uptimeSec:0,requests:files,rssMb:0,sseClients:0,at:new Date().toISOString()};
+        renderLineage(channels,snapshotState);renderTreasury(snapshotState,telemetry,channels);renderLiveTelemetry(snapshotState,telemetry,channels);for(const bar of document.querySelectorAll('.view-statusbar em'))bar.innerHTML=`<i></i> GitHub snapshot · ${channels.length} repositories · ${files} files <time data-et-clock>${etTime()} ET</time>`;
       } catch(fallbackError) { for(const bar of document.querySelectorAll('.view-statusbar em'))bar.textContent=`data unavailable · ${fallbackError.message}`; }
     }
   }
