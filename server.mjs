@@ -14,7 +14,11 @@ const githubChannels=[
   {repo:'anza-xyz/agave',branch:'master',language:'Rust',stars:1930,forks:1227,file:'programs/system/src/system_processor.rs',agent:'orbit-05',mode:'SOLANA RUNTIME'},
   {repo:'pytorch/pytorch',branch:'main',language:'Python',stars:103697,forks:31257,file:'torch/nn/modules/module.py',agent:'tensor-06',mode:'TENSOR ENGINE'},
   {repo:'tensorflow/tensorflow',branch:'master',language:'C++',stars:200680,forks:78201,file:'tensorflow/core/framework/tensor.cc',agent:'matrix-07',mode:'ML KERNEL'},
-  {repo:'langchain-ai/langchain',branch:'master',language:'Python',stars:147415,forks:24695,file:'libs/core/langchain_core/runnables/base.py',agent:'beacon-08',mode:'AGENT FRAMEWORK'}
+  {repo:'langchain-ai/langchain',branch:'master',language:'Python',stars:147415,forks:24695,file:'libs/core/langchain_core/runnables/base.py',agent:'beacon-08',mode:'AGENT FRAMEWORK'},
+  {repo:'paradigmxyz/reth',branch:'main',language:'Rust',stars:5807,forks:2558,file:'crates/node/core/src/node_config.rs',agent:'forge-09',mode:'EVM EXECUTION'},
+  {repo:'MystenLabs/sui',branch:'main',language:'Rust',stars:7763,forks:11648,file:'crates/sui-node/src/lib.rs',agent:'nexus-10',mode:'OBJECT CHAIN'},
+  {repo:'vllm-project/vllm',branch:'main',language:'Python',stars:68000,forks:13000,file:'vllm/v1/engine/core.py',agent:'prism-11',mode:'LLM INFERENCE'},
+  {repo:'ollama/ollama',branch:'main',language:'Go',stars:154000,forks:14000,file:'server/routes.go',agent:'ember-12',mode:'LOCAL MODEL RUNTIME'}
 ];
 const githubCacheFile=resolve(dataDir,'github-cache.json');
 let githubCache=existsSync(githubCacheFile)?{...JSON.parse(readFileSync(githubCacheFile,'utf8')),refreshing:null}:{at:0,channels:[],refreshing:null};
@@ -46,7 +50,7 @@ function sourceExtensions(language){if(language==='Python')return ['.py'];if(lan
 function sourceRank(item,rootDir){const depth=item.path.split('/').length,sameRoot=item.path.startsWith(`${rootDir}/`)?-80:0,sourceDir=/(^|\/)(src|lib|core|runtime|programs|torch|tensorflow)(\/|$)/.test(item.path)?-35:0;return sameRoot+sourceDir+depth*5+Math.abs((item.size||12000)-18000)/5000}
 async function githubSourceFiles(channel,branch,index){let tree=[];try{const result=await githubRequest(`https://api.github.com/repos/${channel.repo}/git/trees/${encodeURIComponent(branch)}?recursive=1`);tree=Array.isArray(result.tree)?result.tree:[]}catch{}const extensions=sourceExtensions(channel.language),rootDir=channel.file.split('/')[0],candidates=tree.filter(item=>item.type==='blob'&&(item.size||0)>1200&&(item.size||0)<220000&&extensions.some(ext=>item.path.endsWith(ext))&&!/(^|\/)(test|tests|testing|docs|examples|vendor|third_party|generated|build|dist|fixtures)(\/|$)/i.test(item.path)&&item.path!==channel.file).sort((a,b)=>sourceRank(a,rootDir)-sourceRank(b,rootDir));const paths=[channel.file,...candidates.slice(0,5).map(item=>item.path)].filter((file,position,all)=>all.indexOf(file)===position).slice(0,5),files=[];for(let fileIndex=0;fileIndex<paths.length;fileIndex++){const file=paths[fileIndex];try{const source=(await githubRawText(channel,branch,index,file)).replaceAll('\r',''),content=source.split('\n').slice(0,240).join('\n');if(content.trim())files.push({path:file,content,size:Buffer.byteLength(source),lines:source.split('\n').length})}catch{}}if(!files.length)throw new Error('no readable source files');return files}
 async function githubStream(){
-  if(Date.now()-githubCache.at<1800000&&githubCache.channels.length&&githubCache.channels.every(item=>item.content&&item.commitAt&&item.commitUrl&&Array.isArray(item.files)&&item.files.length>1))return githubCache;
+  if(Date.now()-githubCache.at<1800000&&githubCache.channels.length===githubChannels.length&&githubCache.channels.every(item=>item.content&&item.commitAt&&item.commitUrl&&Array.isArray(item.files)&&item.files.length>1))return githubCache;
   if(githubCache.refreshing)return githubCache.refreshing;
   githubCache.refreshing=Promise.all(githubChannels.map(async(channel,index)=>{
     try{
