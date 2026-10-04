@@ -92,8 +92,8 @@ npm run check
 npm test
 ```
 
-Token contract, treasury, X account and Pump.fun URL remain explicitly uninitialized until real values are supplied.
+The $CELLUMO mint and Pump.fun market are live. The treasury, burn amount and public activation program remain uninitialized until their real values are supplied.
 
 ## Token loop
 
-Public Agent activation burns $CELLUMO. Pump.fun creator rewards route 80% to the compute reserve and 20% to the verified-Agent epoch pool. Until the CA, burn amount and treasury are published, these controls remain visibly TBA. See [TOKENOMICS.md](./TOKENOMICS.md).
+Public Agent activation burns $CELLUMO. Pump.fun creator rewards route 80% to the compute reserve and 20% to the verified-Agent epoch pool. The CA is published; the burn amount and treasury remain visibly TBA until their on-chain values are finalized. See [TOKENOMICS.md](./TOKENOMICS.md).
