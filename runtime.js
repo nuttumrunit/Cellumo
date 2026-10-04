@@ -1,7 +1,7 @@
 (function(){
   const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
   const runtime={state:null,telemetry:null,wallet:null,online:false,lastRequests:0};
-  const isStaticHost=isStaticHost||location.hostname==='cellumo.fun'||location.hostname==='www.cellumo.fun';
+  const isStaticHost=location.hostname.endsWith('github.io')||location.hostname==='cellumo.fun'||location.hostname==='www.cellumo.fun';
   async function api(path,options={}){const response=await fetch(path,{headers:{'content-type':'application/json',...(options.headers||{})},...options}),value=await response.json();if(!response.ok)throw new Error(value.error||`HTTP ${response.status}`);return value}
   function short(value,size=8){if(!value)return '—';return value.length>size*2?`${value.slice(0,size)}…${value.slice(-size)}`:value}
   function elapsed(seconds){const d=Math.floor(seconds/86400),h=Math.floor(seconds%86400/3600),m=Math.floor(seconds%3600/60),s=seconds%60;return d?`${d}d ${h}h`:h?`${h}h ${m}m`:`${m}m ${s}s`}
