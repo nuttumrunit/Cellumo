@@ -92,7 +92,7 @@ npm run check
 npm test
 ```
 
-The $CELLUMO mint and Pump.fun market are live. The token has 0% transfer tax, with mint and freeze authorities revoked. Treasury is published at $wallet and public Agent activation is set to burn 10,000 $CELLUMO. The public burn-verification service remains locked until the production Core is deployed.
+The $CELLUMO mint and Pump.fun market are live. The token has 0% transfer tax, with mint and freeze authorities revoked. Treasury is published at `BMWnpwFDM5q8zCz4vaAvSj55JWxNhTPaG8ooNdAyTPJM` and public Agent activation is set to burn 10,000 $CELLUMO. The public burn-verification service remains locked until the production Core is deployed.
 
 ## Token loop
 
