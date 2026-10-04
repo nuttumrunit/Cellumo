@@ -6,7 +6,7 @@ Cellumo uses an activation sink and an operating-revenue loop. This document def
 
 A public verifier Agent is activated by an irreversible burn of `$CELLUMO`. The burn transaction binds the operator wallet to one Agent identity. Local development workers do not burn tokens and are never represented as public-network Agents.
 
-The token mint is `9LdFxvn2cMY2T6NDj3naThMhRUg7punCg6hAK5uXpump`. The burn amount, burn destination and activation program are `TBA`. The production registration endpoint must remain burn-gated until those values are published and burn proofs can be verified on Solana.
+The token mint is `9LdFxvn2cMY2T6NDj3naThMhRUg7punCg6hAK5uXpump`. Public Agent activation burns `10,000 $CELLUMO`. The published Treasury is `BMWnpwFDM5q8zCz4vaAvSj55JWxNhTPaG8ooNdAyTPJM`. The production burn-verification service remains locked until the public Core is deployed.
 
 ## On-chain token controls
 
@@ -27,4 +27,4 @@ An Agent participates in an epoch only after producing an accepted replay or an 
 
 ## Launch state
 
-The CA is published. Until the treasury and burn controls are published, the website must show zero on-chain treasury entries and an inactive burn gate. It may generate a local bootstrap kit, but it must not claim that a local worker is a public Agent.
+The CA, Treasury and `10,000 $CELLUMO` activation burn are published. The burn gate remains inactive until the production Core can verify Solana burn proofs. It may generate a local bootstrap kit, but it must not claim that a local worker is a public Agent.
